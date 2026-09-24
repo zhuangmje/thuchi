@@ -195,4 +195,27 @@ function render(){const R=rows();let c=0,t=0;R.forEach(e=>e.t=='chi'?c+=e.a:t+=e
  $('ls2').innerHTML=R.length?[...R].reverse().map(e=>`<div class="it">${e.img?`<img src="${e.img}" data-i="${e.id}" alt="">`:''}<div class="m"><div class="d">${esc(e.dt||'(không ghi chú)')}</div><div class="s">${vd(e.d)} · ${esc(e.s)}${e.c?' · '+esc(e.c):''}</div><div class="s">${e.sy?'✅ đã lên Sheet':'⏳ chưa lên Sheet'+(e.er?' ('+esc(e.er)+')':'')}</div><button class="x" data-x="${e.id}">Xoá trong app</button></div><div class="a ${e.t}">${e.t=='chi'?'−':'+'}${fmt(e.a)}<div class="s">còn ${fmt(e.bal)}</div></div></div>`).join(''):'<p class="n">Chưa có khoản nào.</p>'}
 async function dl(name,data){const b=data instanceof Blob?data:new Blob([data],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove()}
 setTimeout(syncAll,500);
+
+
+/* ===== Nhập dữ liệu cũ: có năm + tự tăng năm khi qua tháng 12 -> 1, chống trùng ===== */
+(()=>{const w=document.createElement('div');
+w.innerHTML='<label>Năm của dòng đầu tiên đang dán</label><input id="iy" inputmode="numeric" value="2025">';
+$('im').parentNode.insertBefore(w,$('im'));
+$('ib').onclick=()=>{
+ const num=s=>+String(s||'').replace(/[^\d]/g,'')||0;
+ let yy=+$('iy').value||new Date().getFullYear(),pm=0,n=0,dup=0;
+ const seen=new Set(S.map(e=>[e.d,e.s,e.dt,e.a,e.t].join('|')));
+ $('im').value.split(/\r?\n/).forEach(l=>{const c=l.split('\t');
+  const m=(c[0]||'').trim().match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);if(!m)return;
+  const mo=+m[2];
+  if(m[3]){yy=+m[3];if(yy<100)yy+=2000}else if(pm&&pm-mo>=6)yy++;
+  pm=mo;
+  const chi=num(c[3]),thu=num(c[8]);if(!chi&&!thu)return;
+  const d=yy+'-'+String(mo).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0');
+  const e={id:Date.now()+n,t:chi?'chi':'thu',d,s:(chi?c[1]:c[6]||c[1])||'',dt:(chi?c[2]:c[7])||'',a:chi||thu,c:c[4]||'',img:null,sy:1};
+  const k=[e.d,e.s,e.dt,e.a,e.t].join('|');if(seen.has(k)){dup++;return}seen.add(k);
+  S.push(e);n++});
+ persist();lists();render();
+ $('msg').textContent='Đã nhập '+n+' dòng'+(dup?', bỏ qua '+dup+' dòng trùng':'')+'. Các dòng này không gửi lại lên Sheet.'};
+})();
 </script></body></html>
