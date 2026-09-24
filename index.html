@@ -47,7 +47,7 @@ p.n{font-size:13px;color:var(--mu);margin:6px 0}
 <section id="v0">
  <div class="card">
   <div class="seg"><button id="bc" class="on chi">Chi</button><button id="bt" class="thu">Thu</button></div>
-  <div class="row2"><div><label>Ngày</label><input type="date" id="d"></div>
+  <div class="row2"><div><label>Ngày</label><input id="d" inputmode="numeric" maxlength="8" placeholder="dd/mm/yy"></div>
   <div><label>Số tiền (₫)</label><input id="a" inputmode="numeric" placeholder="0"></div></div>
   <label>Nguồn (Tiền mặt, VCB, VK, CK…)</label><input id="s" list="ls" placeholder="Chọn hoặc gõ mới">
   <label id="ld">Chi tiết</label><input id="dt" placeholder="Mua gì / thu từ đâu">
@@ -115,14 +115,16 @@ const SRC=['Tiền mặt','VK','CK','ACB','VCB','VIB','MOMO','ZALOPAY','VIETTELP
 const CAT=['Ăn uống','Giải trí','Công Việc','Sức khoẻ','Mua sắm','Tiện ích','hiếu hỉ','chuyển tiền','hóa đơn','tiết kiệm','Di chuyển/giao đồ','Xe cộ','Nâng cao bản thân','thu nợ','hoàn tiền','Kinh Doanh','gửi xe','Cho vay','nạp ĐT'];
 const fmt=n=>(n||0).toLocaleString('vi-VN')+' ₫';
 const today=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')};
-const vd=d=>{const[y,m,x]=d.split('-');return +x+'/'+ +m+'/'+y};
+const vd=d=>{const[y,m,x]=d.split('-');return x+'/'+m+'/'+y.slice(2)};
+function pd(s){const m=String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);if(!m)return today();let y=+m[3];if(y<100)y+=2000;return y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0')}
 function lists(){const u=(a,k)=>[...new Set([...a,...S.map(e=>e[k])].filter(Boolean))];
  $('ls').innerHTML=u(SRC,'s').map(x=>`<option value="${x}">`).join('');
  $('lc').innerHTML=u(CAT,'c').map(x=>`<option value="${x}">`).join('')}
 function rows(){const b={};return [...S].sort((a,c)=>a.d.localeCompare(c.d)||a.id-c.id).map(e=>{b[e.s]=(b[e.s]||0)+(e.t=='chi'?-e.a:e.a);return{...e,bal:b[e.s]}})}
 function setType(t){type=t;$('bc').className=t=='chi'?'on chi':'chi';$('bt').className=t=='thu'?'on thu':'thu';$('ld').textContent=t=='chi'?'Chi tiết':'Khoản thu'}
 $('bc').onclick=()=>setType('chi');$('bt').onclick=()=>setType('thu');
-$('d').value=today();
+$('d').value=vd(today());
+$('d').oninput=e=>{const n=e.target.value.replace(/\D/g,'').slice(0,6);e.target.value=n.replace(/^(\d{2})(\d{1,2})?(\d{1,2})?$/,(a,b,c,d)=>b+(c?'/'+c:'')+(d?'/'+d:''))};
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.className=x==b?'on':'');
  [0,1,2].forEach(i=>$('v'+i).hidden=i!=b.dataset.v);if(b.dataset.v==1)render();scrollTo(0,0)});
 $('pb').onclick=()=>$('f').click();
@@ -132,7 +134,8 @@ $('f').onchange=async e=>{const f=e.target.files[0];if(!f)return;
 $('a').oninput=e=>{const n=e.target.value.replace(/\D/g,'');e.target.value=n?(+n).toLocaleString('vi-VN'):''};
 $('sv').onclick=()=>{const a=+$('a').value.replace(/\D/g,''),s=$('s').value.trim();
  if(!a||!s){alert('Nhập số tiền và nguồn');return}
- S.push({id:Date.now(),t:type,d:$('d').value||today(),s,dt:$('dt').value.trim(),a,c:$('c').value.trim(),img:photo});
+ if(!/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test($('d').value)){alert('Ngày theo dạng dd/mm/yy, ví dụ 24/09/26');return}
+ S.push({id:Date.now(),t:type,d:pd($('d').value),s,dt:$('dt').value.trim(),a,c:$('c').value.trim(),img:photo});
  persist();lists();['a','dt','c'].forEach(i=>$(i).value='');photo=null;$('pv').hidden=true;$('f').value='';
  $('sv').textContent='✓ Đã lưu';setTimeout(()=>$('sv').textContent='Lưu khoản này',1200)};
 function render(){const R=rows();let c=0,t=0;R.forEach(e=>e.t=='chi'?c+=e.a:t+=e.a);
