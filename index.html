@@ -49,7 +49,7 @@ p.n{font-size:13px;color:var(--mu);margin:6px 0}
   <div class="seg"><button id="bc" class="on chi">Chi</button><button id="bt" class="thu">Thu</button></div>
   <div class="row2"><div><label>Ngày</label><input id="d" inputmode="numeric" maxlength="8" placeholder="dd/mm/yy"></div>
   <div><label>Số tiền (₫)</label><input id="a" inputmode="numeric" placeholder="0"></div></div>
-  <label>Nguồn (Tiền mặt, VCB, VK, CK…)</label><input id="s" list="ls" placeholder="Chọn hoặc gõ mới">
+  <label>Nguồn</label><select id="s"></select>
   <label id="ld">Chi tiết</label><input id="dt" placeholder="Mua gì / thu từ đâu">
   <label>Mục</label><input id="c" list="lc" placeholder="Ăn uống, Mua sắm…">
   <div class="ph"><input type="file" id="f" accept="image/*" capture="environment" hidden>
@@ -64,6 +64,12 @@ p.n{font-size:13px;color:var(--mu);margin:6px 0}
 </section>
 
 <section id="v2" hidden>
+ <div class="card">
+  <b>Danh sách Nguồn</b>
+  <p class="n">Chỉ chọn được đúng các nguồn trong danh sách này để khỏi lỗi khi lên Sheet. Gõ đúng như trong Sheet của bạn (ví dụ CK, VK), cách nhau bằng dấu phẩy.</p>
+  <input id="sl" placeholder="CK, VK, Tiền mặt">
+  <button class="btn o" id="sv2">Lưu danh sách nguồn</button>
+ </div>
  <div class="card">
   <b>Xuất ra Google Sheet</b>
   <p class="n">Cột đúng bố cục: Ngày · Nguồn · Chi tiết · Số tiền · Mục · Còn lại · Nguồn · Khoản · Số tiền.</p>
@@ -90,18 +96,10 @@ p.n{font-size:13px;color:var(--mu);margin:6px 0}
 }</pre>
   <button class="btn o" id="cg">Sao chép đoạn code</button>
  </div>
- <div class="card">
-  <b>Đổ dữ liệu từ Sheet vào app</b>
-  <p class="n">Trong Sheet bôi đen các dòng (9 cột) → Sao chép → dán vào đây. Ngày thiếu năm sẽ lấy năm nay.</p>
-  <textarea id="im" rows="4" placeholder="Dán dữ liệu vào đây"></textarea>
-  <button class="btn o" id="ib">Nhập vào app</button>
-  <p class="n" id="msg"></p>
-  <p class="n">Dữ liệu và ảnh lưu trên trình duyệt điện thoại này (khoảng 60–100 ảnh). Nên xuất ZIP định kỳ.</p>
- </div>
 </section>
 </main>
 
-<datalist id="ls"></datalist><datalist id="lc"></datalist>
+<datalist id="lc"></datalist>
 <div id="ov"><img alt=""></div>
 <nav><button data-v="0" class="on">＋ Nhập</button><button data-v="1">☰ Danh sách</button><button data-v="2">⇅ Xuất / Nhập</button></nav>
 
@@ -112,14 +110,20 @@ let S=[],type='chi',photo=null;
 try{S=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){}
 const persist=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){alert('Bộ nhớ đầy. Hãy xuất ZIP rồi xoá bớt khoản cũ.')}};
 const SRC=['Tiền mặt','VK','CK','ACB','VCB','VIB','MOMO','ZALOPAY','VIETTELPAY','VNPTPAY','VNPAY','MOCA','SHOPEE','TÚI THẦN TÀI'];
+const SK='thuchi_src';function getSrc(){try{const a=JSON.parse(localStorage.getItem(SK));if(Array.isArray(a)&&a.length)return a}catch(e){}return['CK','VK','Tiền mặt']}
+function setSrc(a){localStorage.setItem(SK,JSON.stringify(a))}
 const CAT=['Ăn uống','Giải trí','Công Việc','Sức khoẻ','Mua sắm','Tiện ích','hiếu hỉ','chuyển tiền','hóa đơn','tiết kiệm','Di chuyển/giao đồ','Xe cộ','Nâng cao bản thân','thu nợ','hoàn tiền','Kinh Doanh','gửi xe','Cho vay','nạp ĐT'];
 const fmt=n=>(n||0).toLocaleString('vi-VN')+' ₫';
 const today=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')};
 const vd=d=>{const[y,m,x]=d.split('-');return x+'/'+m+'/'+y.slice(2)};
 function pd(s){const m=String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);if(!m)return today();let y=+m[3];if(y<100)y+=2000;return y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0')}
 function lists(){const u=(a,k)=>[...new Set([...a,...S.map(e=>e[k])].filter(Boolean))];
- $('ls').innerHTML=u(SRC,'s').map(x=>`<option value="${x}">`).join('');
+ const cur=$('s').value,opts=getSrc();
+ $('s').innerHTML=opts.map(x=>`<option value="${x}">${x}</option>`).join('');
+ $('s').value=opts.includes(cur)?cur:(opts[0]||'');
  $('lc').innerHTML=u(CAT,'c').map(x=>`<option value="${x}">`).join('')}
+$('sl').value=getSrc().join(', ');
+$('sv2').onclick=()=>{const a=[...new Set($('sl').value.split(',').map(x=>x.trim()).filter(Boolean))];if(!a.length){alert('Nhập ít nhất một nguồn');return}setSrc(a);lists();alert('Đã lưu danh sách nguồn.')};
 function rows(){const b={};return [...S].sort((a,c)=>a.d.localeCompare(c.d)||a.id-c.id).map(e=>{b[e.s]=(b[e.s]||0)+(e.t=='chi'?-e.a:e.a);return{...e,bal:b[e.s]}})}
 function setType(t){type=t;$('bc').className=t=='chi'?'on chi':'chi';$('bt').className=t=='thu'?'on thu':'thu';$('ld').textContent=t=='chi'?'Chi tiết':'Khoản thu'}
 $('bc').onclick=()=>setType('chi');$('bt').onclick=()=>setType('thu');
@@ -156,69 +160,73 @@ $('cg').onclick=()=>copy($('gs').textContent,'Đã sao chép đoạn code.');
 $('e3').onclick=async()=>{const R=rows(),r0=+$('r0').value||2,z=new JSZip(),list=[['Ngày','Tên file ảnh']];
  R.forEach((e,i)=>{const n=r0+i;if(e.img){const f='dong_'+n+'.jpg';z.file(f,e.img.split(',')[1],{base64:true});list.push([vd(e.d),f])}else list.push([vd(e.d),''])});
  z.file('hinh-anh.csv',csv(list));dl('anh-bien-lai.zip',await z.generateAsync({type:'blob'}))};
-$('ib').onclick=()=>{const y=new Date().getFullYear(),num=s=>+String(s||'').replace(/[^\d]/g,'')||0;let n=0;
- $('im').value.split(/\r?\n/).forEach(l=>{const c=l.split('\t');const m=(c[0]||'').trim().match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);if(!m)return;
-  let yy=m[3]?+m[3]:y;if(yy<100)yy+=2000;const d=yy+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
-  const chi=num(c[3]),thu=num(c[8]);if(!chi&&!thu)return;
-  S.push({id:Date.now()+n,t:chi?'chi':'thu',d,s:(chi?c[1]:c[6]||c[1])||'',dt:(chi?c[2]:c[7])||'',a:chi||thu,c:c[4]||'',img:null});n++});
- persist();lists();$('msg').textContent='Đã nhập '+n+' dòng.'};
 lists();
 </script>
 <script>
-/* ===== Đồng bộ tự động lên Drive + Sheet ===== */
+/* ===== Đồng bộ hai chiều với Google Sheet ===== */
 const CF='thuchi_cfg',busy=new Set();
 let cfg={};try{cfg=JSON.parse(localStorage.getItem(CF)||'{}')}catch(e){}
 const card=document.createElement('div');card.className='card';
-card.innerHTML=`<b>Kết nối Google Sheet</b><p class="n">Dán địa chỉ Web App từ Apps Script và mật khẩu đã đặt trong Code.gs.</p>
+card.innerHTML=`<b>Kết nối Google Sheet</b><p class="n">Dán địa chỉ Web App từ Apps Script và mật khẩu đã đặt trong Code.gs. Sau khi kết nối, nhập hoặc xoá ở app hay ở Sheet đều tự khớp lại với nhau khi đồng bộ.</p>
 <label>Địa chỉ Web App (…/exec)</label><input id="cu"><label>Mật khẩu</label><input id="ck" type="password">
-<button class="btn" id="cs">Lưu kết nối</button><button class="btn o" id="cr">Đồng bộ lại các khoản chưa lên</button><p class="n" id="cm"></p>`;
+<button class="btn" id="cs">Lưu kết nối</button><button class="btn o" id="cr">🔄 Đồng bộ hai chiều ngay</button><p class="n" id="cm"></p>`;
 $('v2').insertBefore(card,$('v2').firstChild);
 $('cu').value=cfg.u||'';$('ck').value=cfg.k||'';
-$('cs').onclick=()=>{cfg={u:$('cu').value.trim(),k:$('ck').value};localStorage.setItem(CF,JSON.stringify(cfg));$('cm').textContent='Đã lưu.';syncAll()};
-$('cr').onclick=syncAll;
-async function sync(e){
+$('cs').onclick=()=>{cfg={u:$('cu').value.trim(),k:$('ck').value};localStorage.setItem(CF,JSON.stringify(cfg));$('cm').textContent='Đã lưu.';fullSync()};
+$('cr').onclick=fullSync;
+
+async function callApi(body){
+  const r=await fetch(cfg.u,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({key:cfg.k,...body})});
+  return r.json();
+}
+async function pushOne(e){
   if(!cfg.u||busy.has(e.id))return;busy.add(e.id);
   try{
-    const r=await fetch(cfg.u,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({key:cfg.k,id:e.id,t:e.t,d:e.d,s:e.s,dt:e.dt,a:e.a,c:e.c,img:e.img?e.img.split(',')[1]:''})});
-    const j=await r.json();
-    if(j.ok){e.sy=1;e.er='';if(e.img){e.img=e.img}}else e.er=j.error||'lỗi';
+    const j=await callApi({action:'push',id:String(e.id),t:e.t,d:e.d,s:e.s,dt:e.dt,a:e.a,c:e.c,img:e.img?e.img.split(',')[1]:''});
+    if(j.ok){e.sy=1;e.er=''}else e.er=j.error||'lỗi';
   }catch(x){e.er='chưa có mạng'}
-  busy.delete(e.id);persist();render();$('cm').textContent=S.filter(v=>!v.sy).length?'Còn '+S.filter(v=>!v.sy).length+' khoản chưa lên Sheet.':'Đã đồng bộ hết.';
+  busy.delete(e.id);persist();render();
 }
-async function syncAll(){for(const e of S.filter(v=>!v.sy))await sync(e)}
-$('sv').addEventListener('click',()=>setTimeout(syncAll,50));
-let pre=0;
-$('ib').addEventListener('click',()=>{pre=S.length},true);
-$('ib').addEventListener('click',()=>{S.slice(pre).forEach(e=>e.sy=1);persist()});
-window.addEventListener('online',syncAll);
-/* hiển thị trạng thái + tải file ngoài trang claude.ai */
+async function deleteOne(id){
+  if(!cfg.u)return false;
+  try{const j=await callApi({action:'delete',id:String(id)});return !!j.ok}catch(x){return false}
+}
+async function pushPending(){for(const e of S.filter(v=>!v.sy))await pushOne(e)}
+async function pullAll(){
+  if(!cfg.u)return;
+  let j;try{j=await callApi({action:'pull'})}catch(x){$('cm').textContent='Chưa đồng bộ được, kiểm tra mạng hoặc địa chỉ Web App.';return}
+  if(!j.ok){$('cm').textContent='Lỗi: '+(j.error||'không rõ');return}
+  const remote=j.items||[],rid=new Set(remote.map(x=>String(x.id)));
+  S=S.filter(e=>!(e.sy&&!rid.has(String(e.id))));
+  const local={};S.forEach(e=>local[String(e.id)]=e);
+  let added=0,updated=0;
+  remote.forEach(x=>{
+    const e=local[String(x.id)];
+    if(e){if(e.t!=x.t||e.d!=x.d||e.s!=x.s||e.dt!=x.dt||e.a!=x.a||e.c!=x.c){Object.assign(e,{t:x.t,d:x.d,s:x.s,dt:x.dt,a:x.a,c:x.c});updated++}e.sy=1;e.er=''}
+    else{S.push({id:x.id,t:x.t,d:x.d,s:x.s,dt:x.dt,a:x.a,c:x.c,img:null,sy:1});added++}
+  });
+  persist();lists();render();
+  $('cm').textContent='Đồng bộ xong lúc '+new Date().toLocaleTimeString('vi-VN')+'. Thêm '+added+' khoản từ Sheet'+(updated?', cập nhật '+updated:'')+'. Tổng '+S.length+' khoản.';
+}
+async function fullSync(){await pushPending();await pullAll()}
+$('sv').addEventListener('click',()=>setTimeout(fullSync,80));
+window.addEventListener('online',fullSync);
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.v==='1'||b.dataset.v==='2')fullSync()}));
+
 function render(){const R=rows();let c=0,t=0;R.forEach(e=>e.t=='chi'?c+=e.a:t+=e.a);
  $('tc').textContent=fmt(c);$('tt').textContent=fmt(t);$('tr').textContent=fmt(t-c);
- $('ls2').innerHTML=R.length?[...R].reverse().map(e=>`<div class="it">${e.img?`<img src="${e.img}" data-i="${e.id}" alt="">`:''}<div class="m"><div class="d">${esc(e.dt||'(không ghi chú)')}</div><div class="s">${vd(e.d)} · ${esc(e.s)}${e.c?' · '+esc(e.c):''}</div><div class="s">${e.sy?'✅ đã lên Sheet':'⏳ chưa lên Sheet'+(e.er?' ('+esc(e.er)+')':'')}</div><button class="x" data-x="${e.id}">Xoá trong app</button></div><div class="a ${e.t}">${e.t=='chi'?'−':'+'}${fmt(e.a)}<div class="s">còn ${fmt(e.bal)}</div></div></div>`).join(''):'<p class="n">Chưa có khoản nào.</p>'}
+ $('ls2').innerHTML=R.length?[...R].reverse().map(e=>`<div class="it">${e.img?`<img src="${e.img}" data-i="${e.id}" alt="">`:''}<div class="m"><div class="d">${esc(e.dt||'(không ghi chú)')}</div><div class="s">${vd(e.d)} · ${esc(e.s)}${e.c?' · '+esc(e.c):''}</div><div class="s">${e.sy?'✅ đã lên Sheet':'⏳ chưa lên Sheet'+(e.er?' ('+esc(e.er)+')':'')}</div><button class="x" data-x="${e.id}">Xoá</button></div><div class="a ${e.t}">${e.t=='chi'?'−':'+'}${fmt(e.a)}<div class="s">còn ${fmt(e.bal)}</div></div></div>`).join(''):'<p class="n">Chưa có khoản nào.</p>'}
+
+$('ls2').onclick=async e=>{
+  const x=e.target.dataset;
+  if(x.i){$('ov').firstChild.nextSibling.src=S.find(v=>v.id==x.i).img;$('ov').style.display='flex';return}
+  if(x.x){
+    if(!confirm('Xoá khoản này? Nếu đã lên Sheet, dòng đó cũng sẽ được xoá trên Sheet.'))return;
+    const it=S.find(v=>v.id==x.x);
+    S=S.filter(v=>v.id!=x.x);persist();render();
+    if(it&&it.sy){const ok=await deleteOne(it.id);if(!ok)alert('Xoá trong app xong, nhưng chưa xoá được trên Sheet. Bấm Đồng bộ hai chiều để thử lại.')}
+  }
+};
 async function dl(name,data){const b=data instanceof Blob?data:new Blob([data],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove()}
-setTimeout(syncAll,500);
-
-
-/* ===== Nhập dữ liệu cũ: có năm + tự tăng năm khi qua tháng 12 -> 1, chống trùng ===== */
-(()=>{const w=document.createElement('div');
-w.innerHTML='<label>Năm của dòng đầu tiên đang dán</label><input id="iy" inputmode="numeric" value="2025">';
-$('im').parentNode.insertBefore(w,$('im'));
-$('ib').onclick=()=>{
- const num=s=>+String(s||'').replace(/[^\d]/g,'')||0;
- let yy=+$('iy').value||new Date().getFullYear(),pm=0,n=0,dup=0;
- const seen=new Set(S.map(e=>[e.d,e.s,e.dt,e.a,e.t].join('|')));
- $('im').value.split(/\r?\n/).forEach(l=>{const c=l.split('\t');
-  const m=(c[0]||'').trim().match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);if(!m)return;
-  const mo=+m[2];
-  if(m[3]){yy=+m[3];if(yy<100)yy+=2000}else if(pm&&pm-mo>=6)yy++;
-  pm=mo;
-  const chi=num(c[3]),thu=num(c[8]);if(!chi&&!thu)return;
-  const d=yy+'-'+String(mo).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0');
-  const e={id:Date.now()+n,t:chi?'chi':'thu',d,s:(chi?c[1]:c[6]||c[1])||'',dt:(chi?c[2]:c[7])||'',a:chi||thu,c:c[4]||'',img:null,sy:1};
-  const k=[e.d,e.s,e.dt,e.a,e.t].join('|');if(seen.has(k)){dup++;return}seen.add(k);
-  S.push(e);n++});
- persist();lists();render();
- $('msg').textContent='Đã nhập '+n+' dòng'+(dup?', bỏ qua '+dup+' dòng trùng':'')+'. Các dòng này không gửi lại lên Sheet.'};
-})();
+setTimeout(fullSync,500);
 </script></body></html>
