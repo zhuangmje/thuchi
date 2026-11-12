@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Thu Chi (đồng bộ Sheet)</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#faf7f2;--card:#fff;--tx:#2a2622;--mu:#8a8178;--ln:#e8e1d6;--ac:#0f766e;--chi:#c2410c;--thu:#15803d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#181614;--card:#231f1c;--tx:#f1ece4;--mu:#a39a8f;--ln:#38322c;--ac:#2dd4bf;--chi:#fb923c;--thu:#4ade80}}
+:root[data-theme="dark"]{--bg:#181614;--card:#231f1c;--tx:#f1ece4;--mu:#a39a8f;--ln:#38322c;--ac:#2dd4bf;--chi:#fb923c;--thu:#4ade80}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:76px}
+main{max-width:560px;margin:0 auto;padding:14px}
+h1{font-size:20px;margin:4px 0 12px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px;margin-bottom:12px}
+.seg{display:flex;gap:8px;margin-bottom:12px}
+.seg button{flex:1;padding:11px;border:1.5px solid var(--ln);background:none;color:var(--tx);border-radius:10px;font-size:16px;font-weight:600}
+.seg button.on.chi{background:var(--chi);border-color:var(--chi);color:#fff}
+.seg button.on.thu{background:var(--thu);border-color:var(--thu);color:#fff}
+label{display:block;font-size:12px;color:var(--mu);margin:10px 0 4px}
+input,textarea{width:100%;padding:11px;border:1.5px solid var(--ln);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{width:100%;padding:13px;border:0;border-radius:11px;background:var(--ac);color:#fff;font-size:16px;font-weight:600;margin-top:14px}
+.btn.o{background:none;border:1.5px solid var(--ac);color:var(--ac);margin-top:8px}
+.ph{display:flex;align-items:center;gap:10px;margin-top:10px}
+.ph img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+.it{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--ln)}
+.it:last-child{border:0}
+.it .m{flex:1;min-width:0}.it .d{font-weight:600;overflow-wrap:anywhere}
+.it .s{font-size:12px;color:var(--mu)}
+.it .a{text-align:right;font-weight:700;white-space:nowrap}
+.it .a.chi{color:var(--chi)}.it .a.thu{color:var(--thu)}
+.it img{width:44px;height:44px;object-fit:cover;border-radius:6px}
+.x{border:0;background:none;color:var(--mu);font-size:12px;padding:0;margin-top:4px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;padding:14px 0;border:0;background:none;color:var(--mu);font-size:14px;font-weight:600}
+nav button.on{color:var(--ac)}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;font-size:12px;color:var(--mu)}
+.sum b{display:block;font-size:15px;color:var(--tx)}
+pre{background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:10px;font-size:11px;overflow-x:auto;max-height:180px}
+p.n{font-size:13px;color:var(--mu);margin:6px 0}
+#ov{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:9}
+#ov img{max-width:96%;max-height:90%}
+</style></head><body>
+<main>
+<h1>💰 Thu chi vợ chồng</h1>
+
+<section id="v0">
+ <div class="card">
+  <div class="seg"><button id="bc" class="on chi">Chi</button><button id="bt" class="thu">Thu</button></div>
+  <div class="row2"><div><label>Ngày</label><input id="d" inputmode="numeric" maxlength="8" placeholder="dd/mm/yy"></div>
+  <div><label>Số tiền (₫)</label><input id="a" inputmode="numeric" placeholder="0"></div></div>
+  <label>Nguồn</label><select id="s"></select>
+  <label id="ld">Chi tiết</label><input id="dt" placeholder="Mua gì / thu từ đâu">
+  <label>Mục</label><div style="display:flex;gap:8px"><select id="c" style="flex:1"></select><button class="btn o" id="ca" type="button" style="margin:0;width:52px;padding:0;font-size:22px" aria-label="Thêm mục mới">＋</button></div>
+  <div class="ph" style="flex-wrap:wrap">
+   <input type="file" id="f" accept="image/*" capture="environment" hidden>
+   <input type="file" id="f2" accept="image/*" hidden>
+   <button class="btn o" id="pb" style="margin:0;width:auto;padding:10px 14px">📷 Chụp ảnh</button>
+   <button class="btn o" id="pb2" style="margin:0;width:auto;padding:10px 14px">🖼️ Chọn từ thư viện</button>
+   <img id="pv" hidden alt=""><button class="x" id="px" hidden style="margin:0">Bỏ ảnh</button></div>
+  <button class="btn" id="sv">Lưu khoản này</button>
+ </div>
+</section>
+
+<section id="v1" hidden>
+ <div class="card sum"><div>Chi<b id="tc">0</b></div><div>Thu<b id="tt">0</b></div><div>Còn<b id="tr">0</b></div></div>
+ <div class="card" id="ls2"></div>
+</section>
+
+<section id="v2" hidden>
+ <div class="card">
+  <b>Danh sách Nguồn</b>
+  <p class="n">Chỉ chọn được đúng các nguồn trong danh sách này để khỏi lỗi khi lên Sheet. Gõ đúng như trong Sheet của bạn (ví dụ CK, VK), cách nhau bằng dấu phẩy.</p>
+  <input id="sl" placeholder="CK, VK, Tiền mặt">
+  <button class="btn o" id="sv2">Lưu danh sách nguồn</button>
+ </div>
+ <div class="card">
+  <b>Xuất ra Google Sheet</b>
+  <p class="n">Cột đúng bố cục: Ngày · Nguồn · Chi tiết · Số tiền · Mục · Còn lại · Nguồn · Khoản · Số tiền.</p>
+  <label>Dòng bắt đầu trong sheet (để đánh số ảnh)</label><input id="r0" inputmode="numeric" value="2">
+  <button class="btn" id="e1">Sao chép để dán vào Sheet</button>
+  <button class="btn o" id="e2">Tải file CSV</button>
+  <button class="btn o" id="e3">Tải ZIP ảnh biên lai + danh sách</button>
+ </div>
+ <div class="card">
+  <b>Gắn link ảnh vào Sheet (hyperlink)</b>
+  <p class="n">1) Giải nén ZIP, tải ảnh lên 1 thư mục Google Drive. 2) Trong Sheet: Tiện ích mở rộng → Apps Script, dán đoạn dưới, sửa ID thư mục và tên tab, bấm Chạy. Mỗi ảnh <i>dong_N.jpg</i> sẽ thành link “Xem ảnh” ở cột B dòng N tab hình ảnh.</p>
+  <pre id="gs">function linkAnh(){
+  const FOLDER='DÁN_ID_THƯ_MỤC_DRIVE';
+  const sh=SpreadsheetApp.getActive()
+    .getSheetByName('TÊN_TAB_HÌNH_ẢNH');
+  const it=DriveApp.getFolderById(FOLDER).getFiles();
+  while(it.hasNext()){
+    const f=it.next();
+    const m=f.getName().match(/^dong_(\d+)\./);
+    if(!m) continue;
+    sh.getRange(+m[1],2).setFormula(
+      '=HYPERLINK("'+f.getUrl()+'","Xem ảnh")');
+  }
+}</pre>
+  <button class="btn o" id="cg">Sao chép đoạn code</button>
+ </div>
+</section>
+</main>
+
+<div id="ov"><img alt=""></div>
+<nav><button data-v="0" class="on">＋ Nhập</button><button data-v="1">☰ Danh sách</button><button data-v="2">⇅ Xuất / Nhập</button></nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const K='thuchi_v1',$=i=>document.getElementById(i);
+let S=[],type='chi',photo=null;
+try{S=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){}
+const persist=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){alert('Bộ nhớ đầy. Hãy xuất ZIP rồi xoá bớt khoản cũ.')}};
+const SRC=['Tiền mặt','VK','CK','ACB','VCB','VIB','MOMO','ZALOPAY','VIETTELPAY','VNPTPAY','VNPAY','MOCA','SHOPEE','TÚI THẦN TÀI'];
+const SK='thuchi_src';function getSrc(){try{const a=JSON.parse(localStorage.getItem(SK));if(Array.isArray(a)&&a.length)return a}catch(e){}return['CK','VK','Tiền mặt']}
+function setSrc(a){localStorage.setItem(SK,JSON.stringify(a))}
+const CK2='thuchi_cat';function getCat(){let a=[];try{a=JSON.parse(localStorage.getItem(CK2))||[]}catch(e){}return[...new Set([...(a.length?a:CAT),...S.map(e=>e.c)].filter(Boolean))]}
+function addCat(x){let a=getCat();if(!a.includes(x))a.push(x);localStorage.setItem(CK2,JSON.stringify(a))}
+const CAT=['Ăn uống','Giải trí','Công Việc','Sức khoẻ','Mua sắm','Tiện ích','hiếu hỉ','chuyển tiền','hóa đơn','tiết kiệm','Di chuyển/giao đồ','Xe cộ','Nâng cao bản thân','thu nợ','hoàn tiền','Kinh Doanh','gửi xe','Cho vay','nạp ĐT'];
+const fmt=n=>(n||0).toLocaleString('vi-VN')+' ₫';
+const today=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')};
+const vd=d=>{const[y,m,x]=d.split('-');return x+'/'+m+'/'+y.slice(2)};
+function pd(s){const m=String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);if(!m)return today();let y=+m[3];if(y<100)y+=2000;return y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0')}
+function lists(){const u=(a,k)=>[...new Set([...a,...S.map(e=>e[k])].filter(Boolean))];
+ const cur=$('s').value,opts=getSrc();
+ $('s').innerHTML=opts.map(x=>`<option value="${x}">${x}</option>`).join('');
+ $('s').value=opts.includes(cur)?cur:(opts[0]||'');
+ const cc=$('c').value,cats=getCat();
+ $('c').innerHTML='<option value="">— Chọn mục —</option>'+cats.map(x=>`<option value="${x}">${x}</option>`).join('');
+ $('c').value=cats.includes(cc)?cc:''}
+$('ca').onclick=()=>{const x=(prompt('Tên mục mới (gõ đúng như trong Sheet nếu Sheet có danh sách chọn sẵn):')||'').trim();if(!x)return;addCat(x);lists();$('c').value=x}
+$('sl').value=getSrc().join(', ');
+$('sv2').onclick=()=>{const a=[...new Set($('sl').value.split(',').map(x=>x.trim()).filter(Boolean))];if(!a.length){alert('Nhập ít nhất một nguồn');return}setSrc(a);lists();alert('Đã lưu danh sách nguồn.')};
+function rows(){const b={};return [...S].sort((a,c)=>a.d.localeCompare(c.d)||a.id-c.id).map(e=>{b[e.s]=(b[e.s]||0)+(e.t=='chi'?-e.a:e.a);return{...e,bal:b[e.s]}})}
+function setType(t){type=t;$('bc').className=t=='chi'?'on chi':'chi';$('bt').className=t=='thu'?'on thu':'thu';$('ld').textContent=t=='chi'?'Chi tiết':'Khoản thu'}
+$('bc').onclick=()=>setType('chi');$('bt').onclick=()=>setType('thu');
+$('d').value=vd(today());
+$('d').oninput=e=>{const n=e.target.value.replace(/\D/g,'').slice(0,6);e.target.value=n.replace(/^(\d{2})(\d{1,2})?(\d{1,2})?$/,(a,b,c,d)=>b+(c?'/'+c:'')+(d?'/'+d:''))};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.className=x==b?'on':'');
+ [0,1,2].forEach(i=>$('v'+i).hidden=i!=b.dataset.v);if(b.dataset.v==1)render();scrollTo(0,0)});
+$('pb').onclick=()=>$('f').click();
+$('pb2').onclick=()=>$('f2').click();
+$('px').onclick=()=>{photo=null;$('pv').hidden=true;$('px').hidden=true;$('f').value='';$('f2').value=''};
+$('f').onchange=$('f2').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+ photo=await new Promise(r=>{const i=new Image();i.onload=()=>{const s=Math.min(1,900/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.6))};i.src=URL.createObjectURL(f)});
+ $('pv').src=photo;$('pv').hidden=false;$('px').hidden=false};
+$('a').oninput=e=>{const n=e.target.value.replace(/\D/g,'');e.target.value=n?(+n).toLocaleString('vi-VN'):''};
+$('sv').onclick=()=>{const a=+$('a').value.replace(/\D/g,''),s=$('s').value.trim();
+ if(!a||!s){alert('Nhập số tiền và nguồn');return}
+ if(!/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test($('d').value)){alert('Ngày theo dạng dd/mm/yy, ví dụ 24/09/26');return}
+ S.push({id:Date.now(),t:type,d:pd($('d').value),s,dt:$('dt').value.trim(),a,c:$('c').value.trim(),img:photo});
+ persist();lists();['a','dt'].forEach(i=>$(i).value='');$('c').value='';photo=null;$('pv').hidden=true;$('px').hidden=true;$('f').value='';$('f2').value='';
+ $('sv').textContent='✓ Đã lưu';setTimeout(()=>$('sv').textContent='Lưu khoản này',1200)};
+function render(){const R=rows();let c=0,t=0;R.forEach(e=>e.t=='chi'?c+=e.a:t+=e.a);
+ $('tc').textContent=fmt(c);$('tt').textContent=fmt(t);$('tr').textContent=fmt(t-c);
+ $('ls2').innerHTML=R.length?[...R].reverse().map(e=>`<div class="it">${e.img?`<img src="${e.img}" data-i="${e.id}" alt="">`:''}<div class="m"><div class="d">${esc(e.dt||'(không ghi chú)')}</div><div class="s">${vd(e.d)} · ${esc(e.s)}${e.c?' · '+esc(e.c):''}</div><button class="x" data-x="${e.id}">Xoá</button></div><div class="a ${e.t}">${e.t=='chi'?'−':'+'}${fmt(e.a)}<div class="s">còn ${fmt(e.bal)}</div></div></div>`).join(''):'<p class="n">Chưa có khoản nào.</p>'}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+$('ls2').onclick=e=>{const x=e.target.dataset;if(x.x&&confirm('Xoá khoản này?')){S=S.filter(v=>v.id!=x.x);persist();render()}
+ if(x.i){$('ov').firstChild.nextSibling.src=S.find(v=>v.id==x.i).img;$('ov').style.display='flex'}};
+$('ov').onclick=()=>$('ov').style.display='none';
+function table(){return rows().map(e=>e.t=='chi'?[vd(e.d),e.s,e.dt,e.a,e.c,e.bal,'','','']:[vd(e.d),e.s,'','',e.c,e.bal,e.s,e.dt,e.a])}
+const csv=a=>'\ufeff'+a.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+async function dl(name,data){const d=window.claude&&await claude.use('downloads');if(!d){alert('Máy này chưa hỗ trợ tải file. Dùng nút Sao chép.');return}
+ try{await d.save({filename:name,data})}catch(e){if(e.code!='declined')alert('Không tải được: '+(e.message||e.code))}}
+async function copy(t,ok){try{await navigator.clipboard.writeText(t)}catch(e){const x=document.createElement('textarea');x.value=t;document.body.appendChild(x);x.select();document.execCommand('copy');x.remove()}alert(ok)}
+$('e1').onclick=()=>copy(table().map(r=>r.join('\t')).join('\n'),'Đã sao chép. Mở Sheet, chọn ô Ngày của dòng trống đầu tiên rồi dán.');
+$('e2').onclick=()=>dl('thu-chi.csv',csv(table()));
+$('cg').onclick=()=>copy($('gs').textContent,'Đã sao chép đoạn code.');
+$('e3').onclick=async()=>{const R=rows(),r0=+$('r0').value||2,z=new JSZip(),list=[['Ngày','Tên file ảnh']];
+ R.forEach((e,i)=>{const n=r0+i;if(e.img){const f='dong_'+n+'.jpg';z.file(f,e.img.split(',')[1],{base64:true});list.push([vd(e.d),f])}else list.push([vd(e.d),''])});
+ z.file('hinh-anh.csv',csv(list));dl('anh-bien-lai.zip',await z.generateAsync({type:'blob'}))};
+lists();
+</script>
+<script>
+/* ===== Đồng bộ hai chiều với Google Sheet ===== */
+const CF='thuchi_cfg',busy=new Set();
+let cfg={};try{cfg=JSON.parse(localStorage.getItem(CF)||'{}')}catch(e){}
+const card=document.createElement('div');card.className='card';
+card.innerHTML=`<b>Kết nối Google Sheet</b><p class="n">Dán địa chỉ Web App từ Apps Script và mật khẩu đã đặt trong Code.gs. Sau khi kết nối, nhập hoặc xoá ở app hay ở Sheet đều tự khớp lại với nhau khi đồng bộ.</p>
+<label>Địa chỉ Web App (…/exec)</label><input id="cu"><label>Mật khẩu</label><input id="ck" type="password">
+<button class="btn" id="cs">Lưu kết nối</button><button class="btn o" id="cr">🔄 Đồng bộ hai chiều ngay</button><p class="n" id="cm"></p>`;
+$('v2').insertBefore(card,$('v2').firstChild);
+$('cu').value=cfg.u||'';$('ck').value=cfg.k||'';
+$('cs').onclick=()=>{cfg={u:$('cu').value.trim(),k:$('ck').value};localStorage.setItem(CF,JSON.stringify(cfg));$('cm').textContent='Đã lưu.';fullSync()};
+$('cr').onclick=fullSync;
+
+async function callApi(body){
+  const r=await fetch(cfg.u,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({key:cfg.k,...body})});
+  return r.json();
+}
+async function pushOne(e){
+  if(!cfg.u||busy.has(e.id))return;busy.add(e.id);
+  try{
+    const j=await callApi({action:'push',id:String(e.id),t:e.t,d:e.d,s:e.s,dt:e.dt,a:e.a,c:e.c,img:e.img?e.img.split(',')[1]:''});
+    if(j.ok){e.sy=1;e.er='';e.iw=e.img?(j.ver>=5?(j.warn||''):'Code.gs trên Google chưa phải bản mới (cần Triển khai → Phiên bản mới)'):'';e.ir=j.imgRow||0}else e.er=j.error||'lỗi';
+  }catch(x){e.er='chưa có mạng'}
+  busy.delete(e.id);persist();render();
+}
+async function deleteOne(id){
+  if(!cfg.u)return false;
+  try{const j=await callApi({action:'delete',id:String(id)});return !!j.ok}catch(x){return false}
+}
+async function pushPending(){for(const e of S.filter(v=>!v.sy))await pushOne(e)}
+async function pullAll(){
+  if(!cfg.u)return;
+  let j;try{j=await callApi({action:'pull'})}catch(x){$('cm').textContent='Chưa đồng bộ được, kiểm tra mạng hoặc địa chỉ Web App.';return}
+  if(!j.ok){$('cm').textContent='Lỗi: '+(j.error||'không rõ');return}
+  const remote=j.items||[],rid=new Set(remote.map(x=>String(x.id)));
+  S=S.filter(e=>!(e.sy&&!rid.has(String(e.id))));
+  const local={};S.forEach(e=>local[String(e.id)]=e);
+  let added=0,updated=0;
+  remote.forEach(x=>{
+    const e=local[String(x.id)];
+    if(e){if(e.t!=x.t||e.d!=x.d||e.s!=x.s||e.dt!=x.dt||e.a!=x.a||e.c!=x.c){Object.assign(e,{t:x.t,d:x.d,s:x.s,dt:x.dt,a:x.a,c:x.c});updated++}e.sy=1;e.er=''}
+    else{S.push({id:x.id,t:x.t,d:x.d,s:x.s,dt:x.dt,a:x.a,c:x.c,img:null,sy:1});added++}
+  });
+  persist();lists();render();
+  $('cm').textContent='Đồng bộ xong lúc '+new Date().toLocaleTimeString('vi-VN')+'. Thêm '+added+' khoản từ Sheet'+(updated?', cập nhật '+updated:'')+'. Tổng '+S.length+' khoản.';
+}
+async function fullSync(){await pushPending();await pullAll()}
+$('sv').addEventListener('click',()=>setTimeout(fullSync,80));
+window.addEventListener('online',fullSync);
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.v==='1'||b.dataset.v==='2')fullSync()}));
+
+function render(){const R=rows();let c=0,t=0;R.forEach(e=>e.t=='chi'?c+=e.a:t+=e.a);
+ $('tc').textContent=fmt(c);$('tt').textContent=fmt(t);$('tr').textContent=fmt(t-c);
+ $('ls2').innerHTML=R.length?[...R].reverse().map(e=>`<div class="it">${e.img?`<img src="${e.img}" data-i="${e.id}" alt="">`:''}<div class="m"><div class="d">${esc(e.dt||'(không ghi chú)')}</div><div class="s">${vd(e.d)} · ${esc(e.s)}${e.c?' · '+esc(e.c):''}</div><div class="s">${e.sy?'✅ đã lên Sheet':'⏳ chưa lên Sheet'+(e.er?' ('+esc(e.er)+')':'')}</div>${e.sy&&e.img?(e.iw?`<div class="s" style="color:var(--chi)">⚠️ Ảnh chưa lên: ${esc(e.iw)}</div>`:(e.ir?`<div class="s">📎 Ảnh đã chèn vào tab hình ảnh, dòng ${e.ir}</div>`:''))+`<button class="x" data-r="${e.id}" style="margin-right:12px">Gửi lại ảnh</button>`:''}<button class="x" data-x="${e.id}">Xoá</button></div><div class="a ${e.t}">${e.t=='chi'?'−':'+'}${fmt(e.a)}<div class="s">còn ${fmt(e.bal)}</div></div></div>`).join(''):'<p class="n">Chưa có khoản nào.</p>'}
+
+$('ls2').onclick=async e=>{
+  const x=e.target.dataset;
+  if(x.i){$('ov').firstChild.nextSibling.src=S.find(v=>v.id==x.i).img;$('ov').style.display='flex';return}
+  if(x.r){const it=S.find(v=>v.id==x.r);if(it){it.sy=0;it.er='';persist();render();pushOne(it)}return}
+  if(x.x){
+    if(!confirm('Xoá khoản này? Nếu đã lên Sheet, dòng đó cũng sẽ được xoá trên Sheet.'))return;
+    const it=S.find(v=>v.id==x.x);
+    S=S.filter(v=>v.id!=x.x);persist();render();
+    if(it&&it.sy){const ok=await deleteOne(it.id);if(!ok)alert('Xoá trong app xong, nhưng chưa xoá được trên Sheet. Bấm Đồng bộ hai chiều để thử lại.')}
+  }
+};
+async function dl(name,data){const b=data instanceof Blob?data:new Blob([data],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove()}
+setTimeout(fullSync,500);
+</script></body></html>
