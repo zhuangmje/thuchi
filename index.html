@@ -51,9 +51,13 @@ p.n{font-size:13px;color:var(--mu);margin:6px 0}
   <div><label>Số tiền (₫)</label><input id="a" inputmode="numeric" placeholder="0"></div></div>
   <label>Nguồn</label><select id="s"></select>
   <label id="ld">Chi tiết</label><input id="dt" placeholder="Mua gì / thu từ đâu">
-  <label>Mục</label><input id="c" list="lc" placeholder="Ăn uống, Mua sắm…">
-  <div class="ph"><input type="file" id="f" accept="image/*" capture="environment" hidden>
-   <button class="btn o" id="pb" style="margin:0;width:auto;padding:10px 14px">📷 Ảnh biên lai</button><img id="pv" hidden alt=""></div>
+  <label>Mục</label><div style="display:flex;gap:8px"><select id="c" style="flex:1"></select><button class="btn o" id="ca" type="button" style="margin:0;width:52px;padding:0;font-size:22px" aria-label="Thêm mục mới">＋</button></div>
+  <div class="ph" style="flex-wrap:wrap">
+   <input type="file" id="f" accept="image/*" capture="environment" hidden>
+   <input type="file" id="f2" accept="image/*" hidden>
+   <button class="btn o" id="pb" style="margin:0;width:auto;padding:10px 14px">📷 Chụp ảnh</button>
+   <button class="btn o" id="pb2" style="margin:0;width:auto;padding:10px 14px">🖼️ Chọn từ thư viện</button>
+   <img id="pv" hidden alt=""><button class="x" id="px" hidden style="margin:0">Bỏ ảnh</button></div>
   <button class="btn" id="sv">Lưu khoản này</button>
  </div>
 </section>
@@ -99,7 +103,6 @@ p.n{font-size:13px;color:var(--mu);margin:6px 0}
 </section>
 </main>
 
-<datalist id="lc"></datalist>
 <div id="ov"><img alt=""></div>
 <nav><button data-v="0" class="on">＋ Nhập</button><button data-v="1">☰ Danh sách</button><button data-v="2">⇅ Xuất / Nhập</button></nav>
 
@@ -112,6 +115,8 @@ const persist=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){alert(
 const SRC=['Tiền mặt','VK','CK','ACB','VCB','VIB','MOMO','ZALOPAY','VIETTELPAY','VNPTPAY','VNPAY','MOCA','SHOPEE','TÚI THẦN TÀI'];
 const SK='thuchi_src';function getSrc(){try{const a=JSON.parse(localStorage.getItem(SK));if(Array.isArray(a)&&a.length)return a}catch(e){}return['CK','VK','Tiền mặt']}
 function setSrc(a){localStorage.setItem(SK,JSON.stringify(a))}
+const CK2='thuchi_cat';function getCat(){let a=[];try{a=JSON.parse(localStorage.getItem(CK2))||[]}catch(e){}return[...new Set([...(a.length?a:CAT),...S.map(e=>e.c)].filter(Boolean))]}
+function addCat(x){let a=getCat();if(!a.includes(x))a.push(x);localStorage.setItem(CK2,JSON.stringify(a))}
 const CAT=['Ăn uống','Giải trí','Công Việc','Sức khoẻ','Mua sắm','Tiện ích','hiếu hỉ','chuyển tiền','hóa đơn','tiết kiệm','Di chuyển/giao đồ','Xe cộ','Nâng cao bản thân','thu nợ','hoàn tiền','Kinh Doanh','gửi xe','Cho vay','nạp ĐT'];
 const fmt=n=>(n||0).toLocaleString('vi-VN')+' ₫';
 const today=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')};
@@ -121,7 +126,10 @@ function lists(){const u=(a,k)=>[...new Set([...a,...S.map(e=>e[k])].filter(Bool
  const cur=$('s').value,opts=getSrc();
  $('s').innerHTML=opts.map(x=>`<option value="${x}">${x}</option>`).join('');
  $('s').value=opts.includes(cur)?cur:(opts[0]||'');
- $('lc').innerHTML=u(CAT,'c').map(x=>`<option value="${x}">`).join('')}
+ const cc=$('c').value,cats=getCat();
+ $('c').innerHTML='<option value="">— Chọn mục —</option>'+cats.map(x=>`<option value="${x}">${x}</option>`).join('');
+ $('c').value=cats.includes(cc)?cc:''}
+$('ca').onclick=()=>{const x=(prompt('Tên mục mới (gõ đúng như trong Sheet nếu Sheet có danh sách chọn sẵn):')||'').trim();if(!x)return;addCat(x);lists();$('c').value=x}
 $('sl').value=getSrc().join(', ');
 $('sv2').onclick=()=>{const a=[...new Set($('sl').value.split(',').map(x=>x.trim()).filter(Boolean))];if(!a.length){alert('Nhập ít nhất một nguồn');return}setSrc(a);lists();alert('Đã lưu danh sách nguồn.')};
 function rows(){const b={};return [...S].sort((a,c)=>a.d.localeCompare(c.d)||a.id-c.id).map(e=>{b[e.s]=(b[e.s]||0)+(e.t=='chi'?-e.a:e.a);return{...e,bal:b[e.s]}})}
@@ -132,15 +140,17 @@ $('d').oninput=e=>{const n=e.target.value.replace(/\D/g,'').slice(0,6);e.target.
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.className=x==b?'on':'');
  [0,1,2].forEach(i=>$('v'+i).hidden=i!=b.dataset.v);if(b.dataset.v==1)render();scrollTo(0,0)});
 $('pb').onclick=()=>$('f').click();
-$('f').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+$('pb2').onclick=()=>$('f2').click();
+$('px').onclick=()=>{photo=null;$('pv').hidden=true;$('px').hidden=true;$('f').value='';$('f2').value=''};
+$('f').onchange=$('f2').onchange=async e=>{const f=e.target.files[0];if(!f)return;
  photo=await new Promise(r=>{const i=new Image();i.onload=()=>{const s=Math.min(1,900/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*s;c.height=i.height*s;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.6))};i.src=URL.createObjectURL(f)});
- $('pv').src=photo;$('pv').hidden=false};
+ $('pv').src=photo;$('pv').hidden=false;$('px').hidden=false};
 $('a').oninput=e=>{const n=e.target.value.replace(/\D/g,'');e.target.value=n?(+n).toLocaleString('vi-VN'):''};
 $('sv').onclick=()=>{const a=+$('a').value.replace(/\D/g,''),s=$('s').value.trim();
  if(!a||!s){alert('Nhập số tiền và nguồn');return}
  if(!/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test($('d').value)){alert('Ngày theo dạng dd/mm/yy, ví dụ 24/09/26');return}
  S.push({id:Date.now(),t:type,d:pd($('d').value),s,dt:$('dt').value.trim(),a,c:$('c').value.trim(),img:photo});
- persist();lists();['a','dt','c'].forEach(i=>$(i).value='');photo=null;$('pv').hidden=true;$('f').value='';
+ persist();lists();['a','dt'].forEach(i=>$(i).value='');$('c').value='';photo=null;$('pv').hidden=true;$('px').hidden=true;$('f').value='';$('f2').value='';
  $('sv').textContent='✓ Đã lưu';setTimeout(()=>$('sv').textContent='Lưu khoản này',1200)};
 function render(){const R=rows();let c=0,t=0;R.forEach(e=>e.t=='chi'?c+=e.a:t+=e.a);
  $('tc').textContent=fmt(c);$('tt').textContent=fmt(t);$('tr').textContent=fmt(t-c);
